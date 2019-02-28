@@ -1,0 +1,79 @@
+========= LESSON 2 --> Grouping sets
+Calculating all possible subtotals in a cube, especially those with many dimensions, can be quite an intensive process. If you don't need all the subtotals, this can represent a considerable amount of wasted effort. The following cube with three dimensions gives 8 levels of subtotals (GROUPING_ID: 0-7), shown here.
+
+SELECT fact_1_id,
+       fact_2_id,
+       fact_3_id,
+       SUM(sales_value) AS sales_value,
+       GROUPING_ID(fact_1_id, fact_2_id, fact_3_id) AS grouping_id
+FROM   dimension_tab
+GROUP BY CUBE(fact_1_id, fact_2_id, fact_3_id)
+ORDER BY fact_1_id, fact_2_id, fact_3_id;
+If we only need a few of these levels of subtotaling we can use the GROUPING SETS expression and specify exactly which ones we need, saving us having to calculate the whole cube. In the following query we are only interested in subtotals for the "FACT_1_ID, FACT_2_ID" and "FACT_1_ID, FACT_3_ID" groups.
+
+SELECT fact_1_id,
+       fact_2_id,
+       fact_3_id,
+       SUM(sales_value) AS sales_value,
+       GROUPING_ID(fact_1_id, fact_2_id, fact_3_id) AS grouping_id
+FROM   dimension_tab
+GROUP BY GROUPING SETS((fact_1_id, fact_2_id), (fact_1_id, fact_3_id))
+ORDER BY fact_1_id, fact_2_id, fact_3_id;
+-above qry returns 30 rows.
+========
+
+In the following example, which uses the sample tables hr.departments and hr.employees, if the GROUPING function returns 1 (indicating a superaggregate row rather than a regular row from the table), then the string "All Jobs" appears in the "JOB" column instead of the null that would otherwise appear:
+
+SELECT DECODE(GROUPING(department_name), 1, 'All Departments',
+   department_name) AS department,
+   DECODE(GROUPING(job), 1, 'All Jobs', job) AS job,
+   COUNT(*) "Total Empl", AVG(sal) * 12 "Average Sal"
+   FROM emp e, departments d
+   WHERE d.department_id = e.deptno
+   GROUP BY ROLLUP (department_name, job);
+
+SELECT DECODE(GROUPING(dname), 1, 'All Departments',
+   dname) AS department,
+   DECODE(GROUPING(job), 1, 'All Jobs', job) AS job,
+   COUNT(*) "Total Empl", AVG(sal) * 12 "Average Sal"
+   FROM employee e, department d
+   WHERE d.deptno = e.deptno
+   GROUP BY ROLLUP (dname, job);
+-----
+SELECT deptno, job, sum(sal),
+grouping(deptno) GRPG_DEPT,
+grouping(job) GRPG_JOB,
+grouping_id(deptno,job) GRP_ID
+from emp
+group by CUBE(deptno, job)
+
+SELECT deptno, job, sum(sal),
+grouping(deptno) GRPG_DEPT,
+grouping(job) GRPG_JOB,
+grouping_id(deptno) GRP_ID_DEPT,
+grouping_id(job) GRP_ID_JOB
+from emp
+group by CUBE(deptno, job)
+--group_id
+SELECT deptno, job, sum(sal),
+grouping(deptno) GRPG_DEPT,
+grouping(job) GRPG_JOB,
+grouping_id(deptno,job) GRP_ID_DEPT,
+group_id()
+from employee
+group by CUBE(deptno, job)
+
+====after cube...grouping sets
+If we only need a few of these levels of subtotaling we can use the GROUPING SETS expression and specify exactly which ones we need, saving us having to calculate the whole cube. In the following query we are only interested in subtotals for the "DEPTNO, JOB" and "FACT_1_ID, FACT_3_ID" groups.
+
+SELECT deptno, job, sum(sal),
+grouping_id(deptno,job) GRP_ID_DEPT_job
+from employee
+group by GROUPING SETS ((DEPTNO,JOB))
+ORDER BY DEPTNO,JOB
+
+SELECT deptno, job, sum(sal),
+grouping_id(deptno,job) GRP_ID_DEPT_job
+from employee
+group by GROUPING SETS (DEPTNO,JOB,())
+ORDER BY DEPTNO,JOB

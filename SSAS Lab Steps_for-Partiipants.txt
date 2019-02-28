@@ -1,0 +1,810 @@
+
+IGTECHNSIPAPPV\MSSQLSERVER1
+---------
+New Project:
+Adventure Works DW2012
+
+Imersonation : Windows
+
+Impersonation setting: 
+  User specific Windows user name and pwd (igatecorp\<uid>)
+
+----------
+Provider: Native OLE DB\SQL Server Native Client 10.0
+ServerName: .
+Logon to the server:
+Use Windows authentication
+Connect to a database:
+Select or Enter a database name: AdventureWorks2008R2
+
+Explain Impersonation Information :
+    Use a specific Windows user name and pwd : Username/pwd
+    Use the service account
+    Use the credentials of the current user
+    Inherit
+-----------
+What is Create from other object
+Tabular project:
+
+Tabular and multidimensional solutions are built using SSDT and are intended for corporate BI projects that run on a standalone Analysis Services instance on-premises, and for tabular models, an Azure Analysis Services server in the cloud
+
+SQL Server Data Tools (SSDT) is a toolset which provides an integrated environment for database developers to carry out all their database design work for any SQL Server platform (both on and off premise) within Visual Studio
+
+----------
+Analysis Services provides three client libraries, also known as data providers, for server and data access from tools and client applications. Tools like SSMS and SSDT, and applications like Power BI Desktop and Excel connect to Analysis Services by using these libraries. Two of the client libraries, ADOMD.NET and Analysis Services Management Objects (AMO), are managed client libraries. The Analysis Services OLE DB provider (MSOLAP DLL) is a native client library. Client libraries are the same for both SQL Server Analysis Services and Azure Analysis Services.
+
+----Stage 1:
+Add New data source
+    Adventure works
+
+Add New Data Source view
+ Employee, Product, Time, Customer, Geography,InternetSales
+
+Change the FriendlyName -- InternetSales, Product, 
+Add new Dimension
+ -- Linked object wizard - to link measure groups and dimensions in another Analysis services database or cube or to the current database or cube. this will appear the same to users as other measure groups and dimensions in the cube. Also used to import KPIs, calculations and actions.
+
+Define a New Cube:
+    Seek Suggestions - would selet Internetsales
+    Choose - Promotion Key, Currency Key, Sales Territory Key, Revision number
+
+DSV to Attrib pane:
+Add Attribs  Dimension Designer - Cust Dimension, Geo , Product
+Adding Attributes to Customer, Product Dimensions
+Customer Dim - Designer - Drag and drop below attributes; 
+
+•	BirthDate 
+•	MaritalStatus *
+•	Gender 
+•	EmailAddress  *
+•	YearlyIncome 
+•	TotalChildren 
+•	NumberChildrenAtHome 
+•	EnglishEducation 
+•	EnglishOccupation 
+•	HouseOwnerFlag 
+•	NumberCarsOwned 
+•	Phone 
+•	DateFirstPurchase *
+•	CommuteDistance 
+
+From Geography: City,StateProvinceName,EnglishCountryRegionName,PostalCode 
+
+Product dimension:
+•	StandardCost *
+•	Color *
+•	SafetyStockLevel *
+•	ReorderPoint *
+•	ListPrice * 
+•	Size *
+•	SizeRange *
+•	Weight *
+•	DaysToManufacture *
+•	ProductLine 
+•	DealerPrice *
+•	Class *
+•	Style *
+•	ModelName 
+•	StartDate   - remove
+•	EndDate - remove
+•	Status 
+====>Deploy
+Build checks that your project makes sense. If you refer to an object that doesn't exist, for example, the build will fail and you won't be able to deploy or process.
+Build does more than check the code. Build actually compiles the code. The code check is part of the build process. 
+Deploy copies your model to the target server but the cubes and dimensions over there are not affected until the deployed model is processed. 
+Process uses the model you've deployed, reads the database(s) and calculates the cubes and dimensions. 
+====> Browse & Verify
+----Stage 2:
+Changing Measures, Attributes, hierarchies:
+Internet Sales:
+-----------------
+Format: Order quantity - #,#
+Measure Grid: Unitprice, Ext amt, Disc Amt, Prod Std Cost, Total Prod Cost, Sales Amt, Tax Amt, Freight -> Format strincg is currency
+Unit Price Discount Pct -> Percent
+Name change: Unit Price Discount Pct , Tax Amt 
+Cube Structure - Fact -> Formatting using Format String Properties
+Dimension design - Rename reqd dimensions (Eg Customer English Education to Education)
+Modifying Measures, Attributes, Hierarchies fom Cube designer:
+-------------------------------------------------------------
+Cube -> Internet Sales - Order Quantity - format string to #,#
+Using Show Measure Grid - Change to Currency format for below fields
+•	Unit Price 
+•	Extended Amount 
+•	Discount Amount 
+•	Product Standard Cost 
+•	Total Product Cost 
+•	Sales Amount 
+•	Tax Amt 
+•	Freight 
+-> Name of Unit Price Discount Pct measure to Unit Price Discount Percentage; Tax AMt to Tax Amount
+
+Customer Dimension
+------------------
+  English Education, Egnlish Occupation, State Province Name to Education, Occupation, State-Province
+
+Adding a Named calculation
+----------------------------------
+   --DSV - Customer Table - First Name + ' ' + Middle Name + ' ' + Last Name
+FullName:
+CASE
+   WHEN MiddleName IS NULL THEN
+   FirstName + ' ' + LastName
+   ELSE
+   FirstName + ' ' + MiddleName + ' ' + LastName
+END
+
+
+Grouping Fields to show under one folder
+----------------------------------------
+
+Customer Dimension:
+   City, Country-Region, Postal Code, State-Province ==>AttributedHierDispFolder - Location
+   Demographic folder:
+	Commute Distance 
+	Education 
+	Gender 
+	House Owner Flag 
+	Marital Status 
+	Number Cars Owned 
+	Number Children At Home 
+	Occupation 
+	Total Children 
+	Yearly Income 
+   Contacts Folder: Email Address, Phone
+
+Defining Composite keys for City ==> City + State Province; NameColumn Source - City
+                        for StateProvince ==> StateProvince + Eng Country Region Name; Source - StateProvince
+
+Attribute Hierarchy
+-------------------
+Customer Dimension:-Customer Geography Hierarchy: Country Region-> State-Province -> City
+
+Defining Attribute relationship
+Customer Dimension Designer -> Attribute Relationship Tab 
+  -New Relationship for :  Source - City -> Related Attribute - State province ; Rigid
+  - New relationship for:  StateProvince - Country-Rgion; Rigid
+Rigid / Flexible - what will be the impact if I keep flexible instead of rigid***
+Format some Dimension attributes:
+     Date - change type from Regular to
+      Key, Quarter, Semeseter, Year. Eng Month Name, 
+
+ Change Setting of Date Attributes:
+ FullDateAlternate Key - Attribute type to Date from Regular
+ English Month Name to Month Name
+ Calendar Quarter to Quarters
+ Calendar Year to Years
+ Calendar Semester to Half Years
+
+Customer Dimension:
+---------------------------
+Change names to reqd fields - Eng country Region, Education, Occupation, State-Prov
+
+Creating a Attribute Hierarchy:
+------------------------------------
+Customer Geography==> Country Region-> Sate-Prov->City
+
+Add a Named calculated colum:
+   DSV Designer-> Date Table ->New calculated column
+     Explore data and check the value for this column
+Formula:
+CASE
+   WHEN MiddleName IS NULL THEN
+   FirstName + ' ' + LastName
+   ELSE
+   FirstName + ' ' + MiddleName + ' ' + LastName
+END
+
+Using Named Calc in Name
+Grouping Fields in Dim Structure: AttribierDispFolder--> Location, Demographic, Contacts
+
+Define CompositeKey:
+City --> Key col State-prov; State-prov set key col Eng country region;
+
+Define Attribute Relationships:
+City ->New Attribute Relationship - > Create Attribute Relationship dialog box, the Source Attribute is City and Related Attribute to State-Province. - Relationship type is Rigid.
+State-Province attribute -> New Attribute Relationship-> Create Attribute Relationship dialog box, the Source Attribute is State-Province, Related Attribute to Country-Region, Rigid type
+Deploy and browse
+Deploy  - (can change properties to Deploy only changes)
+  - Build -> Deploy
+Verify: Customer Hierarchy
+
+------Stage 3:
+Modify Time Dimension:
+New Named Calculation for Time: SimpleDate
+Expression:
+Time Dimension - New Named calculation - SimpleDate Eg: DATENAME(mm, FullDateAlternateKey) + ' ' + DATENAME(dd, FullDateAlternateKey) + ' ' + DATENAME(yy, FullDateAlternateKey)
+
+FullDateAlternateKey - Namecolumn will be this new SimpleDate 
+
+Using Namedcolumn for Member Names: TimeKey -> NameColumn -> SimpleDate
+
+Composite Key Definition:
+Time Dimension:
+     - Monthname ==> Key column - Year to be added and NameColumn - Source is Monthname
+     - Quarter   ==> Key column -  Year to be added and NameColumn - Source Quarter Desc
+     - Semester  ==> Key column -  Year to be added and NameColumn - Source Semester Desc
+
+Create Hierarchy:
+Time Hierarchy --> Year -> Semester -> Quarter -> Month
+ Hierarchy Box name - rename to Calendar Time and Timekey to Date
+
+Setting Attribute Relationship: 
+	-English Monthname - new Relation is Calendar Quarter an status Rigid; 
+	- Calendar Quarter -> Calendar Semester; Rigid
+	- Calendar Semester -> Calendar Year ; Rigid
+
+CUBE Design:
+Adding new named calculation 
+   - MonthName - EnglishMonthName+' '+ CONVERT(CHAR (4), CalendarYear)
+   - CalendarQuarterDesc: 'Q' + CONVERT(CHAR (1), CalendarQuarter) +' '+ 'CY ' + CONVERT(CHAR (4), CalendarYear)
+   - CalendarSemesterDesc:
+CASE
+WHEN CalendarSemester = 1 THEN 'H1' + ' ' + 'CY' + ' ' 
+       + CONVERT(CHAR(4), CalendarYear)
+ELSE
+'H2' + ' ' + 'CY' + ' ' + CONVERT(CHAR(4), CalendarYear)
+END
+
+Deploy ****
+
+  Verify:
+-Explore Data
+Using Simple date Nam column in Time Key (Date) attrib;
+
+Create Time Hierarchy:
+Calendar Year,Sem, Qtr, Eng Month Name(Calendar Month)
+
+Set Attrib Relationship Month-> Qtr->Sem->Yr -- Rigid
+
+New Named Cols: 
+Month Name - 
+Expr: EnglishMonthName+' '+ CONVERT(CHAR (4), CalendarYear)
+
+CalendarQuarterDesc - 
+'Q' + CONVERT(CHAR (1), CalendarQuarter) +' '+ 'CY ' +
+CONVERT(CHAR (4), CalendarYear)
+
+CalendarSemesterDesc - 
+CASE
+WHEN CalendarSemester = 1 THEN 'H1' + ' ' + 'CY' + ' ' 
+       + CONVERT(CHAR(4), CalendarYear)
+ELSE
+'H2' + ' ' + 'CY' + ' ' + CONVERT(CHAR(4), CalendarYear)
+END
+
+Set Composite KeyColumns for the English Month Name,Calendar Quarter & Cal Sem
+
+Deploy & Browse
+
+---------Stage 4:
+Sort Order:
+Changing Sort order by modifying Composite Key member order
+
+Change Order by - key cols for Sem, Quarter, Eng month name,
+Calendar Semester Key Attribure sorted by their Key value. With Composite key, order is value of first member and then 2nd member
+Time Dimension Structure: Calendar Semester Properties -> KeyColumns: Should be Year and then Semester;
+     Similarly Calendar Quarter - Year and Quarter and MonthName - Year and Month
+ Deploy and Browse
+==> 
+Explore Table - DSV designer; Pivot/Chart etc
+	ProdSubcategory table - chk p
+
+TimeDimension - New Named Calculation
+    - FiscalYearName - 'FY ' + CONVERT(CHAR(4), FiscalYear)
+    - Explore
+
+Customer table can be replaced with new named query:
+   DSV Designer -> right-click - Replace table with named query
+   Customer + Geography; cols: City, State, Contry   
+
+====>Deploy
+====>Bowse Cube
+Exploring the data cube
+---------Stage 5:
+ Modifying Product Dimension
+ ---------------------------
+
+Adventure DSV: Product Table - Right cilck - New calculated column ProductLineName - 
+	Formula:
+CASE ProductLine
+   WHEN 'M' THEN 'Mountain'
+   WHEN 'R' THEN 'Road'
+   WHEN 'S' THEN 'Accessory'
+   WHEN 'T' THEN 'Touring'
+   ELSE 'Components'
+END
+
+ Modifying NameColumn Property of an Attribute
+ ---------------------------------------------
+  Dimension structure - 
+    ProductLine - NameColumn - ProductLineName
+    Attributes Pane -> Rename Product key to Product Name and NameColumn Property - source - EnglishProductName
+
+ Create Product Hierarchy
+ ------------------------
+ Drag Model Name and then Product Name in next level and the Hierarchy name is Product Model Lines
+
+Stocking Folder creation- Fields - Class, Color, Days To Manufacture ,Reorder Point ,Safety Stock Level ,Size ,Size Range ,Style ,Weight 
+Financial Folder - Dealer Price ,List Price ,Standard Cost 
+History Folder - End Date, Start Date, Status
+Hierarchy Property - All member Name -> All Products
+
+ Attribute Relationship:
+ -----------------------
+
+Product Dimension Designer-> Attribute Relationship
+  Model Name -> New Att. Relationship -> Source is Model Name and Related to Product Line; Flexible
+  (Rel. bet members might change over time)
+
+Deploy and Verify changes
+ Sample: Drag Sales amount into Totals or details fields
+         Product Model Lines - Drop Column Fields
+	 Cust loc Geography Hierarchy - Drop Rows
+  Check the output and then drag  OrderDate.Calendar Time to Filter
+  Customer -> Demographic -> Members -- expand and right click Commute Distance - 10+ miles - add to subcube area
+--------Stage 6
+
+++++++++++++++++++++++++++++Day 3
+Named Query:
+Sometimes, you need to write queries instead of bringing tables and views as is from the database (assume that we don't have access to the underlying database in order to create views or change the structure of tables there). Named Query is a query that runs on the database and its result will be shown as a table in DSV. 
+
+In this example, we will use a Named Query to bring the product category and subcategory along with the product table columns, by performing the following steps: 
+1.	In the Data Source View designer, right-click on the DimProduct table and under Replace Table, choose With New Named Query. 
+2.	In the Create Named Query window, add the ProductCategory and ProductSubCategory tables, and the designer will write joined statements itself. 
+3.	After that step, choose EnglishProductCategoryName and EnglishProductSubcategoryName from the columns list. 
+4.	Explore data of the DimProduct Named Query and review the result.
+
+------------
+MDX queries, Calculated Members, KPI, Action
+MDX queries - Walkthrough_1_Creating an SSAS Project word file - Page 16
+Calculated Members - Walkthrough_1_Creating an SSAS Project word file - Page 17
+Action - Walkthrough_1_Creating an SSAS Project word file - Page 18
+---> Employee
+--->Defining an Attribute Relationship and Sort Order in the Time Dimension - LAb book - 39 & 40
+--> CALCULATE command -
+
+------------
+***Add Fact reseller, sales quota tables to DSV
+
+Add new KPI
+
+How to show KPI in the report
+**Prakash Rajendran
+------------
+Dimension Wizard: Name Column:
+Name that contains values that are more meaningful for the end user. For example, if a product category attribute in a Products dimension uses the ProductCategoryKey column as its key column, you can specify the ProductCategoryName column as its name column.
+
+Fact Reseller Table - Reseller Revenue to be added as one of the measure in the cube
+Reseller Sales Amount, Product Cost
+
+**are the calculated items - reusable in other cubes?
+
+			Implementing some advanced conepts in SSAS Cube
+			-----------------------------------------------
+More Descriptive name for Each level:
+Emplyee Dimension Designer: Browser and see the levels
+
+Cube Designer -> Measures -> Reseller Sales - right click and add Reseller Sales-Sales Amount, and then select Add to Data Area.
+Expand Employee -> Drag Emp Hierarchy to Row field - This will show All member hierarchy in data pane
+
+ Modifying Parent Attribute Properties in the Employee Dimension
+ ---------------------------------------------------------------
+ Employee Dim designer:
+  Employees Attribute Hierarchy - Property -> NamingTemplate
+  Level Naming Template Pop-up:- 2nd row -> Employee Level *
+   Properties window for the Employees attribute, in the MembersWithData property cell, select NonLeafDataHidden to change this value for the Employees attribute - Data that is related to non-leaf level members in the parent-child hierarchy will be hidden.
+
+ Grouping Attribute Hierarchy Members in the Employee Dimension
+ ==============================================================
+
+DSV-> Employee Table-> Explore - Check for SickLeaveHours column and the VacationHours columns
+
+SickLeaveHours - Properties: DiscretizationMethod -> Clusters and DiscretizationBucketCount: 5
+VacationHours -  Properties: DiscretizationMethod -> EqualAreas and DiscretizationBucketCount: 5
+
+Deploy and Verify the result***
+
+Browser:
+Detail Data--> InternetSales-SalesAmount
+Rows -> Product ModelLines
+Cols-> Yearly Income (from Demographic - display Folder)
+
+Notice - the members of the Yearly Income attribute hierarchy are now grouped into six buckets, including a bucket for sales to customers whose yearly income is unknown. Not all buckets are displayed.
+
+Remove Yearly income and Sales-Amount
+Add Reseller-SalesAmount 
+
+Employee Dimension - Expand Organization - Rightclick Sik Leave Hours - add to Column Area
+(Rows - Product Line remains)  Observe the result
+Remove Sick Leave hours and drag Vacation Hours and observer the result
+
+
+--->To modify the grouping properties and review the effect of the changes
+--->To set the attribute hierarchy properties in the Employee dimension
+  - AttributeHierarchyEnabled - property if set to false - this can't be used in User-defined hierarchy
+  - AttributeHierarchyVisible - Indicates this is visibile to the client application; Even if it is not visible, it can be used in MDX and use-defined herarchy
+  - AttributeHierarchyOptimizedState (ie level of optimization applied to that hierarchy)
+  - AttributeHierarchyOrdered - Indicates members of the attribute hierarchy are ordered
+
+Refer Lab book for some additional info and practice
+
+---------------------
+
+ Attribute Relationship and Sort Order of Time dimension
+ -------------------------------------------------------
+Time Dimension -> Browser - Check and expand Hierarchy and observe the sorting (Members are sorted based on ASCII value of their members)
+
+We need to sort based on Month number and name will not workout
+Time Dimension Structure -> MonthNumberOfYear (right click and select New Attribute from Column)
+ - AttributeHierarchyEnabled - False
+ - AttributeHierarchyOptimizedState - Not optimized
+ - AttributeHierarchyOrdered - False
+--> Above settings To hide attribute from users and increase processing time. Won't be used for browsing and only for ordering members of another attribute.
+
+Time - Attrib Relationship tab --> Month Name - Related attrib Month Number of the Year and Rigid
+Dimesion Structure Tab-> Month Name - Order by Property - Change to Attribute Key
+   and OrderByAttribute - Month Number of the year
+
+Deploy ****
+++++++++++++++++
+Similarly do Sorting for Customer Dimension - Commute Distance using CommuteDistanceSort column (Lab book - Page # 41-42)
+
+++++++++++++++++++
+
+Calculations Tab
+----------------
+Cube Designer: Calculation Tab
+command specifies that the measures in the cube should be aggregated according to the value that is specified by their AggregateFunction properties. Measure values are generally summed, but may also be counted or aggregated in some other manner. 
+
+New Calculation Member:
+
+Name--> [Total Sales Amount]   (Note: If embedded spaces are there, should be in square bracket)
+
+On the Metadata tab in the Calculation Tools pane of the Calculations tab, expand Measures and then expand Internet Sales to view the metadata for the Internet Sales measure group. We can drag metadata elements from Calculations Tools pane to Expression box , add operators and other elements to create MDX. We can type MDX query there as well.
+
+Would look like [Measures].[Internet Sales-Sales Amount] +[Measures].[Reseller Sales-Sales Amount]
+Format String - Currency
+Visible - True
+Non-empty behavior - Internet Sales-Sales Amount, Reseller Sales-Sales Amount (to resolve Non-empty queries in MDX):
+Defn:
+The measures you specify in the Non-empty behavior list are used to resolve NON EMPTY queries in MDX. When you specify one or more measures in the Non-empty behavior list, Analysis Services treats the calculated member as empty if all the specified measures are empty. If the Non-empty behavior property is blank, Analysis Services must evaluate the calculated member itself to determine whether the member is empty.
+
+Calculation Tab - Click Script View - to review calculation script in the calc expr.
+[pg 46]
+
+---
+CALCULATE;
+/*Calculations to aggregate internet sales and reseller sales*/
+CREATE MEMBER CURRENTCUBE.[MEASURES].[SALES AMOUNT]
+AS [Measures].[Internet Sales-Sales Amount] +[Measures].[Reseller Sales-Sales Amount],
+FORMAT_STRING="Currency",
+NON_EMPTY_BEHAVIOR = { [Internet Sales-Sales Amount], [Measures].[Reseller Sales-Sales Amount] },
+VISIBLE = 1 ;
+---
+Form View -> Total Sales is selected in Script Organizer
+ [Total Sales Amount] = [Measures].[Sales Amount] + [Measures].[Reseller Sales Amount]
+[Total GPM] =([Measures].[Sales Amount] - [Measures].[Total Product Cost]) / [Measures].[Sales Amount] * 100
+[Sales Quota] = [Measures].[Sales Amount] + ([Measures].[Sales Amount]*0.10)
+
+--
+
+ Toolbar->  Click New Calculated Member - change name to [Total Product Cost] and use expression
+   [Measures].[Internet Sales-Total Product Cost] + [Measures].[Reseller Sales-Total Product Cost]
+Format String - currenc and 
+Non_empty behavior: Internet Sales-Total Product Cost and Reseller Sales-Total Product Cost
+
+To calculate - Total Gross Profit Margin
+ Toolbar-> New calculated Member -> Name : [Total GPM]
+ Expression:
+([Measures].[Sales Amount] - 
+[Measures].[Total Product Cost]) /
+[Measures].[Sales Amount]
+Format String: Percent
+Non_Empty Behavior: Internet Sales-Sales Amount and Reseller Sales-Sales Amount
+
+Another MDX expr for profit margin for each sale could be:
+ ([Measures].[Sales Amount] - 
+  ([Measures].[Total Product Cost] + [Measures].[Tax Amt] + 
+    [Measures].[Freight])) / 
+  [Measures].[Sales Amount]
+
+---modified:
+([Measures].[Internet Sales-Sales Amount] - 
+  ([Measures].[Internet Sales-Total Product Cost] + [Measures].[Internet Sales-Tax Amount] + 
+    [Measures].[Internet Sales-Freight])) / 
+  [Measures].[Internet Sales-Sales Amount]
+
+Verify Script View
+
+Deploy ****
+
+To verify: Browse tab - Reconnect - Metadata Pane - Expand Measures - to view ne calculated members in the Measures
+
+Drag - Totals Sales Amount, Internet Sales-Sales Amount to Data area
+Product Vategories (use defined hierarchy) - Filter Area and filter by some product name (Eg:Mountain Bikes) and notice the result
+Drag Date.Calendar Time  hierarchy to Row and review the results
++++++++++++++++++++++
+Simple KPI - Part 1:
+Value : Total Sales amt, Goal: Sales amt * 1.2, Status: Select Traffic Light and type -1, Trend: std arrow and type -0.8 Deploy
+Bowser view  and view
+Form view: Change Status to 0 and Trend to 0.2 and deploy (amber)
+Status -> 1 and Trend to 0.8, deploy (green)
+
+Non-empty behavior:
+When you specify one or more measures in the Non-empty behavior list, Analysis Services treats the calculated member as empty if all the specified measures are empty. If the Non-empty behavior property is blank, Analysis Services must evaluate the calculated member itself to determine whether the member is empty.
+
+Part 2: Defining the Reseller Revenue KPI - Using MDX
+--------------------------------------------------
+
+Cube Designer --> KPI Tab
+LHS has KPI Organizer Pane an Calculation Tools pane:
+Toolbar - New KPI
+-----------
+KPI using Total GPM:
+Value Expr: [Measures].[Reseller Sales Amount]
+Goal Expr: [Measures].[Sales Quota]
+Note: I Have used Sales Qot – which is a calculated Measure based on Sales amount
+Status Expr: 
+Case
+ When 
+  KpiValue("Reseller Revenue")/KpiGoal("Reseller Revenue")>=.95
+   Then 1
+ When
+  KpiValue("Reseller Revenue")/KpiGoal("Reseller Revenue")<.95
+   And 
+  KpiValue("Reseller Revenue")/KpiGoal("Reseller Revenue")>=.85
+   Then 0
+  Else -1
+End
+
+Trend Expression:
+Case
+ When IsEmpty
+  (ParallelPeriod
+   ([Due Date].[Time Hierarchy].[Calendar Year],1,
+       [Due Date].[Time Hierarchy].CurrentMember))
+  Then 0  
+ When  (
+  KpiValue("Reseller Revenue") - 
+   (KpiValue("Reseller Revenue"), 
+    ParallelPeriod
+     ([Due Date].[Time Hierarchy].[Calendar Year],1,
+       [Due Date].[Time Hierarchy].CurrentMember))
+      /
+      (KpiValue ("Reseller Revenue"),
+       ParallelPeriod
+        ([Due Date].[Time Hierarchy].[Calendar Year],1,
+         [Due Date].[Time Hierarchy].CurrentMember)))
+       >=.02
+  Then 1
+   When(
+    KpiValue("Reseller Revenue") - 
+     (KpiValue ( "Reseller Revenue" ),
+      ParallelPeriod
+       ([Due Date].[Time Hierarchy].[Calendar Year],1,
+        [Due Date].[Time Hierarchy].CurrentMember))
+       /
+        (KpiValue("Reseller Revenue"),
+         ParallelPeriod
+          ([Due Date].[Time Hierarchy].[Calendar Year],1,
+            [Due Date].[Time Hierarchy].CurrentMember)))
+        <=.02
+  Then -1
+   Else 0
+End
+-----------
+Another ex
+New KPI, Associated Measure - IntenetSales
+Value Expr: [Measures].[Profit Margin]
+Goal Expr: indicates what your organization is trying to achieve. For example, your profit margin might currently be at 25%, but your goal might be to reach 30%. 
+Here Goal is set to vary depending on sales territory
+Case 
+  When [Territory].[Sales Territory Group] 
+    Is [Territory].[Sales Territory Group].[Europe] 
+      Then .34 
+  When [Territory].[Sales Territory Group] 
+    Is [Territory].[Sales Territory Group].[North America] 
+      Then .36 
+  When [Territory].[Sales Territory Group] 
+    Is [Territory].[Sales Territory Group].[Pacific] 
+      Then .32 
+  Else .30 
+End
+
+Status Expression: Provideds urrent state of KPI comparing value and Goal
+Case 
+  When KpiValue("Gross Profit") / KpiGoal("Gross Profit") > .90 
+    Then 1 
+  When KpiValue("Gross Profit") / KpiGoal("Gross Profit") <= .90 
+    And 
+       KpiValue("Gross Profit") / KpiGoal("Gross Profit") > .80 
+    Then 0 
+  Else -1 
+
+End
+
+Trend Expression:
+The trend expression lets you compare how your KPI is performing over time. Although the status value can tell you how well you’re achieving you goal at a fixed point in time, it doesn’t tell you how those achievements compare to another point in time. 
+Case 
+  When IsEmpty(ParallelPeriod([Order Date].[Calendar Year].[Calendar Year], 
+      1, [Order Date].[Calendar Year])) 
+    Then 0 
+  When [Measures].[Profit Margin] > 
+    (ParallelPeriod([Order Date].[Calendar Year].[Calendar Year], 
+      1, [Order Date].[Calendar Year]), [Measures].[Profit Margin]) 
+    Then 1 
+  When [Measures].[Profit Margin] = 
+    (ParallelPeriod([Order Date].[Calendar Year].[Calendar Year], 
+      1, [Order Date].[Calendar Year]), [Measures].[Profit Margin]) 
+    Then 0 
+  Else -1 
+End
+Explanation:
+The IsEmpty returns a value of true if the evaluated expression an empty cell value. Otherwise the function returns false.this function is used in the first When expression to determine whether the year preceding the current one exists in the cube data. If not, then the trend expression returns a 0, which indicates a neutral trend. (A trend expression, like the status expression, should return a value from -1 to +1.)
+
+Other Properties:
+•Display folder. The folder in which the KPI can be found when browsing the cube.
+ •Parent KPI.> A KPI that acts as the parent of the current KPI so the parent KPI can use the value of the child KPI.
+ •Current time member. An MDX expression that returns a member that identifies the KPI’s temporal context.
+ •Weight. An MDX expression that assigns a weight to a child KPI to indicate its relative importance in the parent KPI.
+ •Description. A description of the KPI. 
+
+What is previous member
+what is parallel period
+
+----
+Aaction
+KPI
+Date part
+
+About Warnings - some example:
+==============================
+Create hierarchies in non-parent child dimensions:
+For best performance, you should typically organize attributes into a user hierarchy and then define attribute relationships between attributes that correspond to the levels in a user hierarchy. The data in most dimensions has some hierarchical structure that is worth exposing in the cube. Frequently, the Cube Wizard or Dimension Wizard will not detect this hierarchy
+
+==========
+Case
+ When IsEmpty
+  (ParallelPeriod
+   ([Due Date].[Calendar Time].[Calendar Year],1,
+       [Due Date].[Calendar Time].CurrentMember))
+  Then 0  
+ When  (
+  KpiValue("Reseller Revenue") - 
+   (KpiValue("Reseller Revenue"), 
+    ParallelPeriod
+     ([Due Date].[Calendar Time].[Calendar Year],1,
+       [Due Date].[Calendar Time].CurrentMember))
+      /
+      (KpiValue ("Reseller Revenue"),
+       ParallelPeriod
+        ([Due Date].[Calendar Time].[Calendar Year],1,
+         [Due Date].[Calendar Time].CurrentMember)))
+       >=.02
+  Then 1
+   When(
+    KpiValue("Reseller Revenue") - 
+     (KpiValue ( "Reseller Revenue" ),
+      ParallelPeriod
+       ([Due Date].[Calendar Time].[Calendar Year],1,
+        [Due Date].[Calendar Time].CurrentMember))
+       /
+        (KpiValue("Reseller Revenue"),
+         ParallelPeriod
+          ([Due Date].[Calendar Time].[Calendar Year],1,
+            [Due Date].[Calendar Time].CurrentMember)))
+        <=.02
+  Then -1
+   Else 0
+End
+-------
+
+1) The query below returns the member March 2003 which is at the supplied Month level (May 2003) and two prior periods (Fiscal.Month) from the supplied member of May 2003. 
+SELECT 
+      PARALLELPERIOD([Date].[Fiscal].[Month], 2, [Date].[Fiscal].[Month].[May 2003]) ON COLUMNS
+FROM [Adventure Works] 
+2) The query below returns the member November 2002 which is at the supplied Month level (May 2003) and two prior periods (Fiscal Quarter) away from the supplied member of May 2003. 
+SELECT 
+      PARALLELPERIOD([Date].[Fiscal].[Fiscal Quarter], 2, [Date].[Fiscal].[Month].[May 2003]) ON COLUMNS
+FROM [Adventure Works]
+3) The query below returns the member Q3 CY 2001 which is at the supplied Calendar Quarter level (Q1 CY 2004) and three prior periods (Calendar Year) away from the supplied member of Q1 CY 2004.
+SELECT 
+      PARALLELPERIOD([Date].[Calendar].[Calendar Year], 3, [Date].[Calendar].[Calendar Quarter].[Q1 CY 2004]) ON COLUMNS
+FROM [Adventure Works]
+
+--
+KPIValue --> KPIVALUE( «String Expression» )
+The KPIValue function returns the value for the metric that is the basis for the KPI.
+The query below shows the KPIValue for the Revenue KPI. If you look at the value expression for the Revenue KPI, you will see that it maps to the Sales Amount measure.
+SELECT 
+      {KPIVALUE("Revenue"), [Measures].[Sales Amount] } ON COLUMNS,
+      {[Date].[Fiscal].[Fiscal Year].Members} ON ROWS 
+FROM
+      [Adventure Works] 
+
+------working query exaple
+SELECT 
+      PARALLELPERIOD([Due Date].[Calendar Time].[English Month Name], 2, 
+	  [Due Date].[Calendar Time].[English Month Name].[May 2008]) ON COLUMNS
+FROM [Adventure Works Demo] 
+
+Actions tab:
+--------------
+An action is an end user-initiated operation upon a selected cube or portion of a cube. The operation can start an application with the selected item as a parameter, or it can retrieve information about the selected item.
+
+Actions Steps:
+Action Target:
+Select the object to which the action is attached. Generally, in client applications, the action is displayed when end users select the target object; however, the client application determines which end-user operation displays actions.
+Target can be: Attribute members,Cells,Cube,Dimension members,Hierarchy,Hierarchy members,Level,Level members,
+
+After you select the target object type, under Target object, select the cube object of the designated type.
+
+Condition (Optional)
+Specify an optional Multidimensional Expressions (MDX) expression that resolves to a Boolean value. If the value is True, the action is performed on the specified target. If the value is False, the action is not performed
+
+Action Content
+Select the type of action. The following table summarizes the available types.
+Type-->Description
+Data Set-->Retrieves a dataset. . Returns a mutlidimensional dataset.
+Proprietary-->Performs an operation by using an interface other than those listed in this table. Returns a string that can be interpreted by a client application.
+Row Set-->Returns a tabular rowset.
+Statement-->Runs an OLE DB command. Returns a command string that can be run by a client application.
+URL-->Displays a variable page in an Internet browser. Returns a URL that can be opened by a client application, usually a browser.
+Standard. One of five action subtypes that are based on the specified cube data:
+
+For Action Expression, specify the parameters that are passed when the action is run. The syntax must evaluate to a string, and you must include an expression written in MDX. For example, your MDX expression can indicate a part of the cube that is included in the syntax. MDX expressions are evaluated before the parameters are passed. Also, MDX Builder is available to help you build MDX expressions.
+
+Additional Properties
+Select the property. The following table summarizes the available properties.
+
+Property	Description
+Invocation	Specifies how the action is run. Interactive, the default, specifies that the action is run when a user accesses an object. The possible settings are:
+Batch / Interactive/On Open
+Application	Describes the application of the action.
+Description	Describes the action.
+Caption	Provides a caption that is displayed for the action. If the caption is MDX, specify True for Caption is MDX.
+Caption is MDX
+====> General Notes
+Drill through reports: 
+A drill through report allows you to go from summary to detail. For instance: You have a financial application in which you can show the balance and profit and loss for a specific time frame. Every general ledger displays the total amount of all transactions for this specific period. By clicking (Drill through) on one of the general ledgers you will see the underlying transactions for this specific period. 
+
+Drill through means you are drilling through the same report for getting the data. This means when you are hiding /toggling some items with respect to other item,then you will get some plus (+) symbol and by expanding that you will get to show the hidden datas. this feature is known as Drill through.
+
+Basically moving from one report to another which may related to this/parent-chil or may be a different report all together
+
+Drill across means you are drilling across the reports to get the data. this means when you are jumping or navigating from one report to other ,then you are drilling across the reports.this you will get from the property navigation,and by this you can show the data from other reports.
+
+Drill down reports:
+ A drill down reports allows you to look to the data in different levels. For instance, a report displays information on Country level if we drill down the report displays information on state level. Next drill down will display information on city level. So Countries contains States, States contains Cities. So we can view all levels through drill down. 
+Another examples is Year contains Months, Months contains Weeks, Weeks contains Days, Days contains Hours, Hours contains Minutes.
+===> Driill thru actions
+A drillthrough action is defined by a rowset action, which is returned to the client application as a drillthrough statement. The action target is a member of a measure group. To create a new drillthrough action, on the Cube menu, click New Drillthrough Action. The following options are specific to a drillthrough action:
+
+Drillthrough Columns
+Select one or more dimensions and, for each dimension, the drillthrough columns returned to the client application by the action.
+
+Internet Sales Details Drillthru Action
+Drill thru cols: Internet Sales / Sales Order No
+========Partitions
+
+========Aggregations
+Additive:
+
+Semi-additive: SELECt f.SalesOrderNumber,f.SalesOrderLineNumber 
+FROM FactInternetSales F
+ORDER BY f.SalesOrderNumber
+
+pseudo-additive (max/min), 
+SELECT MAX(f.SALESAMount) 
+non-additive - doing nothing
+
+Pseudo additive means Max/Min Add New Measure – Max Sales Amount
+
+Non-addition -> No aggr - Distinct / Distinct count of Order Number – When you try to add new measure using this , this will create a new group --> So non-additive aggregations are costly – Perf will be affected
+
+An AggregationDesign object defines a set of aggregation definitions that can be shared across multiple partitions. An Aggregation object represents the summarization of measure group data at certain granularity of the dimensions.Aggregations are precalculated summaries of data from leaf cells. A simple Aggregation object is composed of: basic information and dimensions. Basic information includes the name of the aggregation, the ID, annotations, and a description. The dimensions are a collection of AggregationDimension objects that contain the list of granularity attributes for the dimension.
+
+SSAS Design Aggr:
+Microsoft SQL Server Analysis Services incorporates a sophisticated algorithm to select aggregations for precalculation so that other aggregations can be quickly computed from the precalculated values. For example, if the aggregations are precalculated for the Month level of a Time hierarchy, the calculation for a Quarter level requires only the summarization of three numbers, which can be quickly computed on demand. This technique saves processing time and reduces storage requirements, with minimal effect on query response time
+========Perspectives
+A perspective gives a cube designer the ability to create a subset of objects from an original cube. The perspective can include: measures, measure groups, dimensions, actions, calculations, and KPI's.

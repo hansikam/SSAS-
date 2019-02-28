@@ -1,0 +1,347 @@
+DMX: Data Mining Extensions (DMX) is a language that you can use to create and work with data mining models in Microsoft SQL Server Analysis Services. You can use DMX to create the structure of new data mining models, to train these models, and to browse, manage, and predict against them. DMX is composed of data definition language (DDL) statements, data manipulation language (DML) statements, and functions and operators.
+
+XML for Analysis (XMLA) is a SOAP-based XML protocol, designed specifically for universal data access to any standard multidimensional data source that can be accessed over an HTTP connection. ... For more information about ASSL, see Developing with Analysis Services Scripting Language (ASSL).
+
+Ref Link: With examples and explanations: http://mdxpert.com/Functions/MDXFunction.aspx
+
+	SELECT 
+		{[Measures].[Sales Amount]} ON COLUMNS ,
+		{[Product].[Product Line]} ON ROWS
+	FROM [Adventure Works DW2012]
+--All members
+SELECT
+{
+	[Measures].[Sales Amount],
+	[Measures].[Tax Amt]
+} on columns,
+{
+--nonempty(
+[Product].[Product Line].Members
+--)
+} on Rows
+FROM [Adventure Works DW2012]
+
+--only 2 memebrs
+SELECT
+{
+	[Measures].[Sales Amount],
+	[Measures].[Tax Amt]
+} on columns,
+{
+[Product].[Product Line].[Accessory],
+[Product].[Product Line].[Road]
+} on Rows
+FROM [Adventure Works DW2012]
+
+--Date
+Customer Dimension:
+SELECT
+{
+	[Customer].[Birth Date].Members
+                --[Customer].[Birth Date].[1/1/1938]
+} on columns,
+{
+[Product].[Product Line].Members
+} on Rows
+FROM [Adventure Works DW2012]
+
+
+Date Dimension:
+SELECT
+{
+	[Ship Date].[Calendar year].Members
+} on columns,
+{
+[Product].[Product Line].[Accessory],
+[Product].[Product Line].[Road]
+} on Rows
+FROM [Adventure Works DW2012]
+
+
+--
+SELECT
+{
+	[Ship Date].[Calendar year].Members
+} on columns,
+{
+[Product].[Product Line].Members
+--[Product].[Product Line].[Road]
+} on Rows
+FROM [Adventure Works DW2012]
+
+----WITH Defn
+If a calculated member is only required for a single Multidimensional Expressions (MDX) query (ie query-scoped calculated member), you can define that calculated member by using the WITH keyword. A calculated member that is created by using the WITH keyword no longer exists after the query has finished running.
+Example A:
+The following MDX query defines a calculated member, [Measures].[Special Discount], calculating a special discount based on the original discount amount.
+WITH   
+   MEMBER [Measures].[Special Discount] AS  
+   [Measures].[Discount Amount] * 1.5  
+SELECT   
+   [Measures].[Discount Amount] on COLUMNS,  
+   NON EMPTY [Product].[Product].MEMBERS  ON Rows  
+FROM [Adventure Works DW2012]  
+WHERE [Product].[Category].[Bikes] 
+
+working qry:
+WITH   
+   MEMBER [Measures].[Special Tax] AS  
+   [Measures].[Tax Amt] * 1.5  
+SELECT   
+   [Measures].[Special Tax] on COLUMNS,  
+   NON EMPTY [Customer].[City].MEMBERS  ON Rows  
+FROM [Adventure Works DW2012]  
+WHERE 
+--[Product].[Category].[Bikes] 
+[Product].[Product Line].[Product Line].[Accessory]
+
+Ex B:
+You can also create calculated members at any point within a hierarchy. For example, the following MDX query defines the [BigSeller] calculated member for a hypothetical Sales cube. This calculated member determines whether a specified store has at least 100.00 in unit sales for beer and wine. However, the query creates the [BigSeller] calculated member not as a child member of the [Product] dimension, but instead as a child member of the [Beer and Wine] member.
+WITH   
+   MEMBER [Product].[Beer and Wine].[BigSeller] AS  
+  IIf([Product].[Beer and Wine] > 100, "Yes","No")  
+SELECT  
+   {[Product].[BigSeller]} ON COLUMNS,  
+   Store.[Store Name].Members ON ROWS  
+FROM Sales
+
+Working qry;
+WITH   
+      MEMBER [Measures].[Special Tax] AS  
+   IIf([Measures].[Tax Amt] > 1000, "Yes","No")  
+SELECT   
+   [Measures].[Special Tax] on COLUMNS,  
+   NON EMPTY [Customer].[City].MEMBERS  ON Rows  
+FROM [Adventure Works DW2012]  
+WHERE 
+--[Product].[Category].[Bikes] 
+[Product].[Product Line].[Product Line].[Accessory]
+
+----
+
+Default Member Syntax:
+-----------------------------
+Hierarchy_Expression.DefaultMember  
+Hierarchy_Expression is a valid Multidimensional Expressions (MDX) expression that returns a hierarchy.
+
+--to check what is the default member 
+WITH MEMBER Measures.[Default Measure] AS
+[Measures].DefaultMember.Name
+
+Showing default measure and the value in one query
+By placing the default measure directly on the X axis, you can get the default measure name and the value in one query.
+SELECT
+[Measures].DefaultMember ON 0
+FROM
+[Adventure Works DW2012]
+
+Change Default member using Cube Structure - properties - DefaltMember is Order Date Key
+If No attribute is selected, first one is chosen as Default. Change to Sales amt, deploy and verify.
+
+"How to see which measure is the default measure via MDX", then run a query like this:
+WITH Member [dim].[att].IsDefault AS Measures.DefaultMember IS Measures.CurrentMember
+
+SELECT {[dim].[att].IsDefault} on columns,
+     Measures.Members on rows
+FROM [CubeName]
+where [dim].[att] is any dimension and attribute name appearing in your cube. It just must be a different dimension/attribute from the measures dimension.
+--------
+**
+--for 2 years
+SELECT
+{
+	[Date].[Calendar year].[2007],
+	[Date].[Calendar year].[2008]
+} on columns,
+{
+[Product].[Product Line].Members
+--[Product].[Product Line].[Road]
+} on Rows
+FROM [Adventure Works DW2012]
+
+SELECT
+{
+	[Date].[Calendar year].[2007],
+	[Date].[Calendar year].[2008]
+} on columns,
+{
+[Product].[Product Line].Members
+--[Product].[Product Line].[Road]
+} on Rows
+FROM [Adventure Works DW2012]
+WHERE  ([Measures].[Sales Amount])
+--above qry with (gives sales amt) and without predicate (gives default measure)
+
+---if you don't select any measure, it shows default measure (in our case Order Date Key)
+ 
+SELECT
+{
+	[Date].[Year].[Year].members
+	--[Date].[Calendar year].Members
+} on columns,
+{
+[Product].[Product Line].Members
+--[Product].[Product Line].[Road]
+} on Rows
+FROM [Adventure Works DW2012]
+
+
+	SELECT
+	{
+		[Date].[year].Members
+	} on columns,
+	{
+	[Product].[Product Line].Members
+		} on Rows
+	FROM [Adventure Works DW2012]
+	WHERE
+	{
+		([Customer].[Country Region].[United States],[Measures].[Sales Amount])
+	}	
+		
+
+**
+SELECT
+	{
+		[Measures].[Sales Amount]
+	} on columns,
+	{
+		[Product].[Product Line].Members
+	} on Rows
+FROM [Adventure Works DW2012]
+WHERE
+	([Customer].[Country Region].[United States]) 
+
+--adding freight in the where clause
+	SELECT
+	{
+		[Date].[Calendar year].Members
+	} on columns,
+	{
+	[Product].[Product Line].Members
+	--[Product].[Product Line].[Road]
+	} on Rows
+	FROM [Adventure Works DW2012]
+	WHERE
+		(
+		[Measures].[Freight],
+		[Customer].[Country Region].[United States]
+		)
+
+--
+WITH
+		MEMBER [Measures].[YOY Growth]   AS
+		(
+			[Dim Date].[Calendar Quarter].CurrentMember,
+			[Measures].[Reseller Sales Amount]
+		)    -
+		(
+			[Dim Date].[Calendar Quarter].PrevMember,
+			[Measures].[Reseller Sales Amount]
+		)
+SELECT
+	{
+		[Dim Date].[Calendar year].Members
+	} on columns,
+	{
+	[Product].[Product Line].Members
+	--[Product].[Product Line].[Road]
+	} on Rows
+	FROM [Adventure Works DW2012]
+
+{([customer].[country-region].[canada]), ([customer].[country-region].[unites-states])}
+
+---to get both canada and uS
+	SELECT
+	{
+		[Date].[Calendar year].Members
+	} on columns,
+	{
+	[Product].[Product Line].Members
+	--[Product].[Product Line].[Road]
+	} on Rows
+	FROM [Adventure Works DW2012]
+	WHERE
+		(
+		[Measures].[Freight],
+		
+		{
+		([customer].[country region].[Canada]), 
+		 ([customer].[country region].[United States])}
+				)
+	
+=========KPI related MDX
+ParellelPeriod:
+-----------------
+Returns a member from a prior period in the same relative position as a specified member.
+
+Ex 1: The query below returns the member March 2003 which is at the supplied Month level (May 2003) and two prior periods (Fiscal.Month) from the supplied member of May 2003.
+
+SELECT 
+      PARALLELPERIOD([Date].[Fiscal].[Month], 2, [Date].[Fiscal].[Month].[May 2003]) ON COLUMNS
+--      PARALLELPERIOD([Due Date].[Due Date].[Due Date Month] , 2, [Due Date].[Due Date].[Due Date Month] ) ON COLUMNS
+
+FROM
+      [Adventure Works DW2012] 
+
+Ex 2: The query below returns the member November 2002 which is at the supplied Month level (May 2003) and two prior periods (Fiscal Quarter) away from the supplied member of May 2003.
+SELECT 
+      PARALLELPERIOD([Date].[Fiscal].[Fiscal Quarter], 2, [Date].[Fiscal].[Month].[May 2003]) ON COLUMNS
+FROM
+      [Adventure Works DW2012]
+
+Ex 3: The query below returns the member Q3 CY 2001 which is at the supplied Calendar Quarter level (Q1 CY 2004) and three prior periods (Calendar Year) away from the supplied member of Q1 CY 2004.
+SELECT 
+      PARALLELPERIOD([Date].[Calendar].[Calendar Year], 3, [Date].[Calendar].[Calendar Quarter].[Q1 CY 2004]) ON COLUMNS
+FROM       [SSAS Dec 2017 Demo]
+
+--ParallelPeriod ([Date].[Calendar Time].[Calendar Year],1, [Date].[Calendar Time].CurrentMember)
+
+--[Due Date].[Due Date].[Due Date Month]  -- try this for parallel period this is correct
+
+PrevMember:
+---------------
+The PrevMember function returns the previous member of a level for a supplied member.
+Ex 1: The query below returns the previous member for the member November 2003 in the Calendar hierarchy in the Date dimension.
+SELECT 
+      {} ON COLUMNS,
+      {[Date].[Calendar].[Month].[November 2003].PrevMember} ON ROWS 
+FROM
+      [Adventure Works]
+
+SELECT 
+      {} ON COLUMNS,
+      {[Date].[Year].[2008].PrevMember} ON ROWS 
+FROM
+      [Adventure Works DW2012]
+
+Ex 2:
+The following query returns the previous member for the member November 15, 2003 in the Calendar hierarchy in the Date dimension.
+SELECT 
+      {} ON COLUMNS,
+      {[Date].[Calendar].[November 15, 2003].PrevMember} ON ROWS 
+FROM
+      [Adventure Works]
+
+Ex 3: The query below returns the previous member for the member California in the Geography hierarchy in the Geography dimension.
+SELECT 
+      {} ON COLUMNS,
+      {[Geography].[Geography].[State-Province].[California].PrevMember} ON ROWS 
+FROM
+      [Adventure Works]
+
+=Statistical functions
+SELECT 
+      {[Measures].[Order Quantity]} ON COLUMNS,
+	   AVG([Due Date].[Year].CurrentMember.Children,[Measures].[Order Quantity])
+      {[Due Date].[Year].Members} ON ROWS 
+FROM
+      [Adventure Works]
+ AVG([Due Date].[Year].CurrentMember.Children,[Measures].[Order Quantity])
+
+SELECT 
+      {[Measures].[Order Quantity]} ON COLUMNS,
+	   AVG([Customer].[City].CurrentMember.Children,[Measures].[Order Quantity])
+      {[Customer].[Country Region].Members} ON ROWS 
+FROM
+      [Adventure Works DW2012]
+AVG([Customer].[City].CurrentMember.Children,[Measures].[Order Quantity])
